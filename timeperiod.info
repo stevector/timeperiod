@@ -1,0 +1,5 @@
+name = Time period
+description = Defines time period widgets and formatters to be used with Integer fields.
+package = Field
+core = 7.x
+dependencies[] = field
