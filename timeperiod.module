@@ -33,19 +33,23 @@ function timeperiod_element_info() {
  * FAPI process callback for the timeperiod element type.
  */
 function timeperiod_element_process($element, &$form_state) {
+  // Put the child elements in a container-inline div.
+  // @todo Move it out of field-suffix and prefix.
+  $element['prefix'] = array('#markup' => '<div class="timeperiod-element container-inline">');
+
+  $value = isset($element['#default_value']) ? $element['#default_value'] : 0;
   $unit_labels = timeperiod_element_units();
   foreach ($element['#units'] as $unit => $max) {
+
     $element[$unit] = array(
       '#type' => 'select',
-      '#title' => $unit_labels[$unit],
       '#options' => drupal_map_assoc(range(0, $max)),
-      '#default_value' => (int) $element['#default_value'] / $unit,
+      '#default_value' => (int) ($value / $unit),
+      '#field_suffix' => $unit_labels[$unit],
     );
+    $value -= $element[$unit]['#default_value'] * $unit;
   }
-  // Put the child elements in a container-inline div.
-  $element['#prefix'] = '<div class="timeperiod-element container-inline">';
-  $element['#suffix'] = '</div>';
-
+  $element['suffix'] = array('#markup' => '</div>');
   return $element;
 }
 
@@ -54,10 +58,10 @@ function timeperiod_element_process($element, &$form_state) {
  */
 function timeperiod_element_units() {
   return array(
-    '86400' => t('Days'),
-    '3600' => t('Hours'),
-    '60' => t('Minutes'),
-    '1' => t('Seconds'),
+    '86400' => t('days'),
+    '3600' => t('hours'),
+    '60' => t('minutes'),
+    '1' => t('seconds'),
   );
 }
 
@@ -106,17 +110,9 @@ function timeperiod_field_widget_info() {
 function timeperiod_field_widget_form(&$form, &$form_state, $field, $instance, $langcode, $items, $delta, $element) {
   $value = isset($items[$delta]['value']) ? $items[$delta]['value'] : '';
 
-
   $element += array(
-    '#type' => 'textfield',
+    '#type' => 'timeperiod_select',
     '#default_value' => $value,
-    // Allow a slightly larger size that the field length to allow for some
-    // configurations where all characters won't fit in input field.
-    '#size' => $field['type'] == 'timeperiod_decimal' ? $field['settings']['precision'] + 4 : 12,
-    // Allow two extra characters for signed values and decimal separator.
-    '#maxlength' => $field['type'] == 'timeperiod_decimal' ? $field['settings']['precision'] + 2 : 10,
-    // Extract the number type from the field type name for easier validation.
-    '#timeperiod_type' => str_replace('timeperiod_', '', $field['type']),
   );
 
   // Add prefix and suffix.
@@ -129,39 +125,7 @@ function timeperiod_field_widget_form(&$form, &$form_state, $field, $instance, $
     $element['#field_suffix'] = field_filter_xss(array_pop($suffixes));
   }
 
-  $element['#element_validate'][] = 'timeperiod_field_widget_validate';
-
   return array('value' => $element);
-}
-
-/**
- * FAPI validation of an individual number element.
- */
-function timeperiod_field_widget_validate($element, &$form_state) {
-  $field = field_widget_field($element, $form_state);
-  $instance = field_widget_instance($element, $form_state);
-
-  $type = $element['#timeperiod_type'];
-  $value = $element['#value'];
-
-  // Reject invalid characters.
-  if (!empty($value)) {
-    switch ($type) {
-      case 'float':
-      case 'decimal':
-        $regexp = '@([^-0-9\\' . $field['settings']['decimal_separator'] . '])|(.-)@';
-        $message = t('Only numbers and the decimal separator (@separator) allowed in %field.', array('%field' => $instance['label'], '@separator' => $field['settings']['decimal_separator']));
-        break;
-
-      case 'integer':
-        $regexp = '@([^-0-9])|(.-)@';
-        $message = t('Only numbers are allowed in %field.', array('%field' => $instance['label']));
-        break;
-    }
-    if ($value != preg_replace($regexp, '', $value)) {
-      form_error($element, $message);
-    }
-  }
 }
 
 /**
@@ -188,44 +152,18 @@ function hook_field_widget_settings_form($field, $instance) {
   return $form;
 }
 
-
-
-
 /**
  * Implements hook_field_formatter_info().
  */
 function timeperiod_field_formatter_info() {
   return array(
-    // The 'Default' formatter is different for integer fields on the one hand,
-    // and for decimal and float fields on the other hand, in order to be able
-    // to use different default values for the settings.
-    'timeperiod_integer' => array(
-      'label' => t('Default'),
-      'field types' => array('timeperiod_integer'),
+    'timeperiod_default' => array(
+      'label' => t('Time period'),
+      'field types' => array('number_integer'),
       'settings' =>  array(
-        'thousand_separator' => ' ',
-        // The 'decimal_separator' and 'scale' settings are not configurable
-        // through the UI, and will therefore keep their default values. They
-        // are only present so that the 'timeperiod_integer' and 'timeperiod_decimal'
-        // formatters can use the same code.
-        'decimal_separator' => '.',
-        'scale' => 0,
+        'granularity' => 2,
         'prefix_suffix' => TRUE,
       ),
-    ),
-    'timeperiod_decimal' => array(
-      'label' => t('Default'),
-      'field types' => array('timeperiod_decimal', 'timeperiod_float'),
-      'settings' =>  array(
-        'thousand_separator' => ' ',
-        'decimal_separator' => '.',
-        'scale' => 2,
-        'prefix_suffix' => TRUE,
-      ),
-    ),
-    'timeperiod_unformatted' => array(
-      'label' => t('Unformatted'),
-      'field types' => array('timeperiod_integer', 'timeperiod_decimal', 'timeperiod_float'),
     ),
   );
 }
@@ -237,43 +175,17 @@ function timeperiod_field_formatter_settings_form($field, $instance, $view_mode,
   $display = $instance['display'][$view_mode];
   $settings = $display['settings'];
 
-  if ($display['type'] == 'timeperiod_decimal' || $display['type'] == 'timeperiod_integer') {
-    $options = array(
-      ''  => t('<none>'),
-      '.' => t('Decimal point'),
-      ',' => t('Comma'),
-      ' ' => t('Space'),
-    );
-    $element['thousand_separator'] = array(
-      '#type' => 'select',
-      '#title' => t('Thousand marker'),
-      '#options' => $options,
-      '#default_value' => $settings['thousand_separator'],
-    );
-
-    if ($display['type'] == 'timeperiod_decimal') {
-      $element['decimal_separator'] = array(
-        '#type' => 'select',
-        '#title' => t('Decimal marker'),
-        '#options' => array('.' => t('Decimal point'), ',' => t('Comma')),
-        '#default_value' => $settings['decimal_separator'],
-      );
-      $element['scale'] = array(
-        '#type' => 'select',
-        '#title' => t('Scale'),
-        '#options' => drupal_map_assoc(range(0, 10)),
-        '#default_value' => $settings['scale'],
-        '#description' => t('The number of digits to the right of the decimal.'),
-      );
-    }
-
-    $element['prefix_suffix'] = array(
-      '#type' => 'checkbox',
-      '#title' => t('Display prefix and suffix.'),
-      '#default_value' => $settings['prefix_suffix'],
-    );
-  }
-
+  $element['granularity'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Granularity.'),
+    '#default_value' => $settings['granularity'],
+    '#description' => t('The number of different units to display.'),
+  );
+  $element['prefix_suffix'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Display prefix and suffix.'),
+    '#default_value' => $settings['prefix_suffix'],
+  );
   return $element;
 }
 
@@ -285,13 +197,12 @@ function timeperiod_field_formatter_settings_summary($field, $instance, $view_mo
   $settings = $display['settings'];
 
   $summary = array();
-  if ($display['type'] == 'timeperiod_decimal' || $display['type'] == 'timeperiod_integer') {
-    $summary[] = timeperiod_format(1234.1234567890, $settings['scale'], $settings['decimal_separator'], $settings['thousand_separator']);
+  if ($display['type'] == 'timeperiod_default') {
+    $summary[] = format_interval(1234, $settings['granularity']);
     if ($settings['prefix_suffix']) {
       $summary[] = t('Display with prefix and suffix.');
     }
   }
-
   return implode('<br />', $summary);
 }
 
@@ -303,10 +214,11 @@ function timeperiod_field_formatter_view($entity_type, $entity, $field, $instanc
   $settings = $display['settings'];
 
   switch ($display['type']) {
-    case 'timeperiod_integer':
-    case 'timeperiod_decimal':
+
+    case 'timeperiod_default':
       foreach ($items as $delta => $item) {
-        $output = timeperiod_format($item['value'], $settings['scale'], $settings['decimal_separator'], $settings['thousand_separator']);
+        $output = format_interval($item['value'], $settings['granularity']);
+        // Prefix/Suffix handling taken from number_field_formatter_view(),
         if ($settings['prefix_suffix']) {
           $prefixes = isset($instance['settings']['prefix']) ? array_map('field_filter_xss', explode('|', $instance['settings']['prefix'])) : array('');
           $suffixes = isset($instance['settings']['suffix']) ? array_map('field_filter_xss', explode('|', $instance['settings']['suffix'])) : array('');
@@ -317,14 +229,6 @@ function timeperiod_field_formatter_view($entity_type, $entity, $field, $instanc
         $element[$delta] = array('#markup' => $output);
       }
       break;
-
-    case 'timeperiod_unformatted':
-      foreach ($items as $delta => $item) {
-        $element[$delta] = array('#markup' => $item['value']);
-      }
-      break;
   }
-
   return $element;
 }
-
