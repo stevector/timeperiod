@@ -34,8 +34,10 @@ function timeperiod_element_info() {
  */
 function timeperiod_element_process($element, &$form_state) {
   // Put the child elements in a container-inline div.
-  // @todo Move it out of field-suffix and prefix.
-  $element['prefix'] = array('#markup' => '<div class="timeperiod-element container-inline">');
+  $element['#field_prefix'] = isset($element['#field_prefix']) ? $element['#field_prefix'] : '';
+  $element['#field_prefix'] = '<div class="timeperiod-element container-inline">' . $element['#field_prefix'];
+  $element['#field_suffix'] = isset($element['#field_suffix']) ? $element['#field_suffix'] : '';
+  $element['#field_suffix'] .= '</div>';
 
   $value = isset($element['#default_value']) ? $element['#default_value'] : 0;
   $unit_labels = timeperiod_element_units();
@@ -49,7 +51,6 @@ function timeperiod_element_process($element, &$form_state) {
     );
     $value -= $element[$unit]['#default_value'] * $unit;
   }
-  $element['suffix'] = array('#markup' => '</div>');
   return $element;
 }
 
