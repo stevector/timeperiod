@@ -119,6 +119,10 @@ function timeperiod_field_widget_form(&$form, &$form_state, $field, $instance, $
   );
 
   // Apply unit settings.
+  // Sort the configured units before applying them to prevent features.module
+  // to mess with our ordering.
+  krsort($instance['widget']['settings']['units']);
+
   foreach ($instance['widget']['settings']['units'] as $unit => $info) {
     if ($info['max'] > 0) {
       $element['#units'][$unit] = $info;
