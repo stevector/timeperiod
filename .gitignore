@@ -13,6 +13,7 @@
 .idea/modules.xml
 .idea/*.iml
 .idea/copyright*
+.idea/watcherTasks.xml
 
 # Sensitive or high-churn files:
 .idea/dataSources.ids
@@ -48,4 +49,3 @@ com_crashlytics_export_strings.xml
 crashlytics.properties
 crashlytics-build.properties
 fabric.properties
-

@@ -1,0 +1,19 @@
+fieldset.form-item.form-wrapper {
+  .form-item {
+    &.form-type-number {
+
+      margin-left: 0.9em;
+      &:first-of-type {
+        margin-left: 0;
+      }
+
+      &.form-item-days,
+      &.form-item-hours,
+      &.form-item-minutes,
+      &.form-item-seconds {
+        display: inline-block !important;
+      }
+    }
+  }
+}
+

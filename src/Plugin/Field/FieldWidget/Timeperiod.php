@@ -139,7 +139,8 @@ class Timeperiod extends WidgetBase {
    * {@inheritdoc}
    */
   public function formElement(FieldItemListInterface $items, $delta, array $element, array &$form, FormStateInterface $form_state) {
-
+    $element['#type'] = 'fieldset';
+    $element['#tree'] = FALSE;
     $settings = $this->getSettings();
 
     $value = isset($items[$delta]->value) ? $items[$delta]->value : 0;
@@ -184,6 +185,10 @@ class Timeperiod extends WidgetBase {
     }
 
     $element = $element + $widget;
+    $element['#attached']['library'][] = 'timeperiod/timeperiod-form';
+    //header('content-type:text/plain');
+    //var_dump($element);
+    //exit;
     return $element;
 
   }

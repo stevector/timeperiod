@@ -1,0 +1,6 @@
+fieldset.form-item.form-wrapper .form-item.form-type-number {
+  margin-left: 0.9em; }
+  fieldset.form-item.form-wrapper .form-item.form-type-number:first-of-type {
+    margin-left: 0; }
+  fieldset.form-item.form-wrapper .form-item.form-type-number.form-item-days, fieldset.form-item.form-wrapper .form-item.form-type-number.form-item-hours, fieldset.form-item.form-wrapper .form-item.form-type-number.form-item-minutes, fieldset.form-item.form-wrapper .form-item.form-type-number.form-item-seconds {
+    display: inline-block !important; }
