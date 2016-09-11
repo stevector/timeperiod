@@ -56,7 +56,7 @@ class Timeperiod extends FormatterBase {
   /**
    * {@inheritdoc}
    */
-  public function viewElements(FieldItemListInterface $items) {
+  public function viewElements(FieldItemListInterface $items, $langcode) {
     $element = [];
     $date_formatter = \Drupal::service("date.formatter");
     foreach ($items as $delta => $item) {
