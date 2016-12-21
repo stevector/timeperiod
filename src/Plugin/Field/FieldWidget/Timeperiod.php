@@ -178,13 +178,14 @@ class Timeperiod extends WidgetBase {
           '#max' => $unit['max'],
           '#step' => $settings[$key . '_step'],
           '#default_value' => intval($value / $unit['value']),
+          '#class' => ['timeperiod-unit', 'timeperiod-unit-' . $key],
         ];
         $value -= $widget[$key]['#default_value'] * $unit['value'];
       }
     }
 
     $element['#type'] = 'fieldgroup';
-    $element['#tree'] = FALSE;
+    $element['#tree'] = TRUE;
     $element['#collapsible'] = FALSE;
     $element = $element + $widget;
     $element['#attached']['library'][] = 'timeperiod/timeperiod-form';
@@ -199,7 +200,6 @@ class Timeperiod extends WidgetBase {
    * {@inheritdoc}
    */
   public function massageFormValues(array $values, array $form, FormStateInterface $form_state) {
-
     foreach ($values as $delta => $value) {
       $values[$delta]['value'] = 86400 * $value['days'] + 3600 * $value['hours'] + 60 * $value['minutes'] + $value['seconds'];
     }
