@@ -14,6 +14,10 @@ Usage
  * Enable the module.
  * Create a field of type integer and select a time period widget and or
    formatter.
+
+Known Issues
+
+ * Field formatter not available in Views with aggregation enabled.
    
 Maintainers:
 
