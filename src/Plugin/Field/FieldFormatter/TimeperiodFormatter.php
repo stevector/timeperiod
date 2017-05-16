@@ -7,8 +7,8 @@
 
 namespace Drupal\timeperiod\Plugin\Field\FieldFormatter;
 
-use Drupal\Core\Field\FormatterBase;
 use Drupal\Core\Field\FieldItemListInterface;
+use Drupal\Core\Field\Plugin\Field\FieldFormatter\NumericFormatterBase;
 use Drupal\Core\Form\FormStateInterface;
 
 
@@ -19,7 +19,7 @@ use Drupal\Core\Form\FormStateInterface;
  *  field_types = {"integer"}
  * )
  */
-class TimeperiodFormatter extends FormatterBase {
+class TimeperiodFormatter extends NumericFormatterBase {
 
   /**
    * {@inheritdoc}
@@ -58,12 +58,17 @@ class TimeperiodFormatter extends FormatterBase {
    */
   public function viewElements(FieldItemListInterface $items, $langcode) {
     $element = [];
-    $date_formatter = \Drupal::service("date.formatter");
+
     foreach ($items as $delta => $item) {
-      $element[$delta]['#markup'] = $date_formatter->formatInterval($item->value, $this->getSetting('granularity'));
+      $element[$delta]['#markup'] = $this->numberFormat( $this->value );
     }
     return $element;
 
+  }
+
+  protected function numberFormat($number) {
+    $date_formatter = \Drupal::service("date.formatter");
+    return $date_formatter->formatInterval($number, $this->getSetting('granularity'))
   }
 
 }
