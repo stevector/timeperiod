@@ -9,6 +9,8 @@ Time periods can be entered using multiple units, whereas the module allows
 inputing days, hours, minutes and seconds. Each unit can be enabled separately
 and the maximum value and step size can be configured.
 
+UPDATE May 15, 2017 - It is recommended that you use the [8.x-2.x](https://github.com/r0nn1ef/timeperiod/tree/8.x-2.x) branch of this module.
+
 Usage
 
  * Enable the module.
@@ -18,6 +20,8 @@ Usage
 Known Issues
 
  * Field formatter not available in Views with aggregation enabled.
+
+
    
 Maintainers:
 
