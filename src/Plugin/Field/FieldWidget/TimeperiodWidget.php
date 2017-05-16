@@ -189,9 +189,7 @@ class TimeperiodWidget extends WidgetBase {
     $element['#collapsible'] = FALSE;
     $element = $element + $widget;
     $element['#attached']['library'][] = 'timeperiod/timeperiod-form';
-    //header('content-type:text/plain');
-    //var_dump($element);
-    //exit;
+
     return $element;
 
   }
