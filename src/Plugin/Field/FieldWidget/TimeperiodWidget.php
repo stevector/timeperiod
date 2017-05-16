@@ -19,7 +19,7 @@ use Drupal\Core\Form\FormStateInterface;
  *  field_types = {"integer"}
  * )
  */
-class Timeperiod extends WidgetBase {
+class TimeperiodWidget extends WidgetBase {
 
   /**
    * {@inheritdoc}
