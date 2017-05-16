@@ -68,7 +68,7 @@ class TimeperiodFormatter extends NumericFormatterBase {
 
   protected function numberFormat($number) {
     $date_formatter = \Drupal::service("date.formatter");
-    return $date_formatter->formatInterval($number, $this->getSetting('granularity'))
+    return $date_formatter->formatInterval($number, $this->getSetting('granularity'));
   }
 
 }
