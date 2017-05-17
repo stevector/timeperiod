@@ -60,7 +60,7 @@ class TimeperiodFormatter extends NumericFormatterBase {
     $element = [];
 
     foreach ($items as $delta => $item) {
-      $element[$delta]['#markup'] = $this->numberFormat( $this->value );
+      $element[$delta]['#markup'] = $this->numberFormat($item->value);
     }
     return $element;
 
